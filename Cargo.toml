@@ -1,0 +1,6 @@
+[package]
+name = "ifcs"
+version = "0.1.0"
+authors = ["Michael Sorenson <m.sorenson407@gmail.com>"]
+
+[dependencies]
