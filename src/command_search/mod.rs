@@ -1,8 +1,9 @@
 use std::fs::File;
 use std::io::Read;
+use std::collections::HashSet;
 
 pub struct History {
-    commands: Vec<String>
+    commands: HashSet<String>
 }
 
 impl History {
@@ -15,7 +16,7 @@ impl History {
             .read_to_string(&mut contents)
             .expect("Couldn't read history file");
 
-        let commands: Vec<String> = contents.lines()
+        let commands: HashSet<String> = contents.lines()
             .map(|x| x.splitn(2, ";").collect())
             .map(|x: Vec<&str>| x.last().unwrap().to_string())
             .collect();
@@ -29,7 +30,34 @@ impl History {
         let matches = self.commands.clone();
 
         matches.into_iter()
-            .take(input.len())
+            .flat_map(|x| score(input, x))
             .collect()
+    }
+}
+
+fn score(pattern: &str, command: String) -> Option<String> {
+    let size = command.len();
+    let mut likeness = 0;
+    let mut index = 0;
+
+    for c in pattern.chars() {
+        let remaining = command.chars()
+            .skip(index)
+            .skip_while(|&x| x != c)
+            .collect::<Vec<_>>()
+            .len();
+
+        index = size - remaining;
+        if index != size {
+            likeness += 1;
+            index += 1;
+        } else {
+            break;
+        }
+    }
+
+    match likeness == pattern.len() {
+        true => Some(command),
+        false => None,
     }
 }
