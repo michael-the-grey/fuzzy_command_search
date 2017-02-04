@@ -2,18 +2,19 @@ extern crate ncurses;
 
 mod command_search;
 
+use command_search::CommandSearch;
+
 fn main() {
     ncurses::initscr();
     ncurses::refresh();
-    let mut command: String = String::new();
-    let history = command_search::History::new();
+    let mut search = CommandSearch::new();
 
     clear_screen();
-    command_prompt(&command);
+    command_prompt("");
     loop {
-        let c = ncurses::getch() as u8 as char;
-        command.push(c);
-        let matches = history.search(&command);
+        let c = ncurses::getch() as u8;
+        let matches = search.input(c);
+        let command = search.command.clone();
 
         clear_screen();
         print_results(matches);
