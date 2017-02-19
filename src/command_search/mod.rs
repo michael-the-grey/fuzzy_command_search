@@ -4,8 +4,25 @@ use std::collections::HashSet;
 use std::env;
 use std::path;
 
+pub enum Action {
+    Add(char),
+    Delete,
+    Select,
+}
+
+impl Action {
+    pub fn parse(input: u8) -> Action {
+        match input {
+            10 => Action::Select,
+            127 => Action::Delete,
+            c => Action::Add(c as char),
+        }
+    }
+}
+
 pub struct CommandSearch {
     pub command: String,
+    pub matches: Vec<String>,
     history: HashSet<String>
 }
 
@@ -28,26 +45,28 @@ impl CommandSearch {
 
         CommandSearch {
             command: String::new(),
+            matches: Vec::new(),
             history: history
         }
     }
 
-    pub fn input(&mut self, action: u8) -> Vec<String> {
+    pub fn change(&mut self, action: Action) {
         match action {
-            127 => {
+            Action::Add(c) => self.command.push(c),
+            Action::Delete => {
                 self.command.pop();
             }
-            c => self.command.push(c as char),
+            Action::Select => (),
         }
-        self.search()
+        self.search();
     }
 
-    fn search(&self) -> Vec<String> {
-        let matches = self.history.clone();
+    fn search(&mut self) {
+        let commands = self.history.clone();
 
-        matches.into_iter()
+        self.matches = commands.into_iter()
             .flat_map(|x| self.score(x))
-            .collect()
+            .collect();
     }
 
     fn score(&self, command: String) -> Option<String> {

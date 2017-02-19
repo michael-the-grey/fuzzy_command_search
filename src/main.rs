@@ -3,6 +3,8 @@ extern crate ncurses;
 mod command_search;
 
 use command_search::CommandSearch;
+use command_search::Action;
+
 
 fn main() {
     ncurses::initscr();
@@ -13,13 +15,21 @@ fn main() {
     command_prompt("");
     loop {
         let c = ncurses::getch() as u8;
-        let matches = search.input(c);
+        let action = Action::parse(c);
+        match action {
+            Action::Select => break,
+            a => search.change(a),
+        }
+        let matches = search.matches.clone();
         let command = search.command.clone();
 
         clear_screen();
         print_results(matches);
         command_prompt(&command);
     }
+    ncurses::endwin();
+    println!("{}", search.matches.first().unwrap());
+    std::process::exit(0);
 }
 
 fn screen_height() -> usize {
