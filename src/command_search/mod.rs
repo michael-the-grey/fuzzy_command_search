@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::Read;
+use std::io::BufRead;
 use std::collections::HashSet;
 use std::env;
 use std::path;
@@ -28,19 +29,19 @@ pub struct CommandSearch {
 
 impl CommandSearch {
     pub fn new() -> CommandSearch {
-        let mut contents = String::new();
+        let mut contents = Vec::new();
         let home = env::var("HOME").expect("HOME variable must be set");
         let mut zsh_history = path::PathBuf::from(home.as_str());
         zsh_history.push(".zsh_history");
 
         File::open(zsh_history)
             .expect("Couldn't read history file")
-            .read_to_string(&mut contents)
+            .read_to_end(&mut contents)
             .expect("Couldn't read history file");
 
         let history: HashSet<String> = contents.lines()
-            .map(|x| x.splitn(2, ";").collect())
-            .map(|x: Vec<&str>| x.last().unwrap().to_string())
+            .flat_map(|x| x.ok())
+            .map(|y| y.splitn(2, ";").last().unwrap().to_string())
             .collect();
 
         CommandSearch {

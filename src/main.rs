@@ -7,9 +7,9 @@ use command_search::Action;
 
 
 fn main() {
+    let mut search = CommandSearch::new();
     ncurses::initscr();
     ncurses::refresh();
-    let mut search = CommandSearch::new();
 
     clear_screen();
     command_prompt("");
